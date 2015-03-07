@@ -43,6 +43,11 @@ INSTALLED_APPS = (
     'bulbs.contributions',
     'bulbs.cms_notifications',
 
+    'elastimorphic',
+
+    'rest_framework',
+    'rest_framework.authtoken',
+
     'integration.core'
 )
 
@@ -67,7 +72,7 @@ WSGI_APPLICATION = 'integration.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': 'db.sqlite3',
     }
 }
 
@@ -89,3 +94,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    )
+}
+
+ES_URLS = ["127.0.0.1:9200"]
