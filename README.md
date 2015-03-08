@@ -6,6 +6,8 @@ This repo is used for integration testing, etc. Making sure that our Python and 
 
     $ virtualenv .
     $ source ./bin/activate
+    $ npm install
+    $ bower install
     $ pip install -r requirements.txt
     $ python manage.py migrate
     $ python manage.py synces 0001
