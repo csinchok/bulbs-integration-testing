@@ -1,7 +1,8 @@
 import datetime
 from django.core.management.base import BaseCommand
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
+from django.db import transaction
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 
@@ -64,49 +65,54 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        try:
-            admin = User.objects.get(username="admin")
-        except User.DoesNotExist:
-            admin = User.objects.create_superuser(
-                username="admin",
-                email="tech@theonion.com",
-                password="testing")
-
-        authors = []
-        for data in AUTHORS:
+        author_group = Group.objects.get(name="author")
+        
+        with transaction.atomic():
             try:
-                author = User.objects.get(username=data["username"])
+                admin = User.objects.get(username="admin")
             except User.DoesNotExist:
-                author = User.objects.create_user(password="noop", **data)
-            authors.append(author)
+                admin = User.objects.create_superuser(
+                    username="admin",
+                    email="tech@theonion.com",
+                    password="testing")
 
-        feature_types = []
-        for name in FEATURE_TYPES:
-            ft, created = FeatureType.objects.get_or_create(name=name)
-            feature_types.append(ft)
+            authors = []
+            for data in AUTHORS:
+                try:
+                    author = User.objects.get(username=data["username"])
+                except User.DoesNotExist:
+                    author = User.objects.create_user(password="noop", **data)
+                author.groups.add(author_group)
+                authors.append(author)
 
-        tags = []
-        for name in TAGS:
-            tag, created = Tag.objects.get_or_create(name=name)
-            tags.append(tag)
+            feature_types = []
+            for name in FEATURE_TYPES:
+                ft, created = FeatureType.objects.get_or_create(name=name)
+                feature_types.append(ft)
 
-        for ft in feature_types:
-            counter = 0
-            for tag_com in itertools.combinations_with_replacement(tags, 2):
-                for author_com in itertools.combinations_with_replacement(authors, 3):
-                    article, created = Article.objects.get_or_create(
-                        title="{}: {}".format(ft.name, counter),
-                        feature_type=ft,
-                        defaults={
-                            'published': timezone.now() + datetime.timedelta(hours=1)
-                        }
-                    )
-                    for tag in tag_com:
-                        article.tags.add(tag)
+            tags = []
+            for name in TAGS:
+                tag, created = Tag.objects.get_or_create(name=name)
+                tags.append(tag)
 
-                    for author in author_com:
-                        article.authors.add(author)
+        with transaction.atomic():
+            for ft in feature_types:
+                counter = 0
+                for tag_com in itertools.combinations_with_replacement(tags, 2):
+                    for author_com in itertools.combinations_with_replacement(authors, 3):
+                        article, created = Article.objects.get_or_create(
+                            title="{}: {}".format(ft.name, counter),
+                            feature_type=ft,
+                            defaults={
+                                'published': timezone.now() - datetime.timedelta(hours=1)
+                            }
+                        )
+                        for tag in tag_com:
+                            article.tags.add(tag)
 
-                    counter += 1
+                        for author in author_com:
+                            article.authors.add(author)
+
+                        counter += 1
 
         Token.objects.get_or_create(user=admin, key="notarealkey")

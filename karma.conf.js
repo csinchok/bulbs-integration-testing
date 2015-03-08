@@ -17,15 +17,14 @@ module.exports = function(config) {
     files: [
       'bower_components/angular/angular.js',
       'node_modules/ng-midway-tester/src/ngMidwayTester.js',
-      // 'bower_components/angular-route/angular-route.min.js',
-      // 'bower_components/angular-inflector/dist/angular-inflector.js',
       'bower_components/angular-restmod/dist/angular-restmod-bundle.js',
       'bower_components/angular-restmod/dist/styles/ams.js',
       'bower_components/angular-restmod/dist/plugins/debounced.js',
-      // 'bower_components/angular-mocks/angular-mocks.js',
 
-      'bulbs-api/*.js',
-      'bulbs-api/*/*.js'
+      'bower_components/angular-bulbs-api/src/*.js',
+      'bower_components/angular-bulbs-api/src/*/*.js',
+
+      'tests/*.js'
     ],
 
 
@@ -70,6 +69,6 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false
+    singleRun: true
   });
 };
